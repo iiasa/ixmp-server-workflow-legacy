@@ -37,4 +37,4 @@ def validate_variables_and_units(df: pd.DataFrame,
 
 def read_config(config_path: str) -> dict:
     with open(config_path, 'r') as f:
-        return yaml.load(f)
+        return yaml.load(f, Loader=yaml.FullLoader)
