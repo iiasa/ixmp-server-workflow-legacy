@@ -1,0 +1,20 @@
+# Apple file system
+.DS_Store
+
+# setuptools
+build/
+dist
+
+# virtualenv
+venv/
+
+# JetBrains IDEs
+*.iml
+.idea/
+
+# pytest and related
+.pytest_cache/
+*.pid
+
+# temporary folder
+temp/
