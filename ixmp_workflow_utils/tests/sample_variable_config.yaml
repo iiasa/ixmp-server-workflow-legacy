@@ -1,0 +1,14 @@
+Emissions|CO:
+  unit: Mt CO/yr
+Emissions|CO2:
+  unit: Mt CO2/yr
+Emissions|F-Gases:
+  unit: Mt CO2-equiv/yr
+Emissions|Kyoto Gases:
+  unit: Mt CO2-equiv/yr
+Emissions|N2O:
+  unit: kt N2O/yr
+Price|Carbon:
+  method: w.avg
+  unit: US$2010/t CO2
+  weight: Emissions|CO2
