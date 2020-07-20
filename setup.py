@@ -9,5 +9,6 @@ setup(
     description='Common utilities to use in application workflow scripts',
     packages=['ixmp_workflow_utils'],
     install_requires=[
+        'pandas'
     ],
 )
