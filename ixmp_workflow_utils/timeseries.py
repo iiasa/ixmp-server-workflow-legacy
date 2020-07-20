@@ -17,7 +17,7 @@ def validate_variables_and_units(df: pd.DataFrame,
     valid = True
 
     # check for unknown variable names
-    unknown_variables = list(df.variable.unique()) - variable_config.keys()
+    unknown_variables = set(df.variable.unique()) - set(variable_config.keys())
     if len(unknown_variables) > 0:
         log.warning(f'Unknown variable(s): {", ".join(unknown_variables)}')
         valid = False
@@ -32,6 +32,17 @@ def validate_variables_and_units(df: pd.DataFrame,
                         f'{", ".join(unknown_units)}')
             valid = False
     log.debug('Finish variables/units validation')
+    return valid
+
+
+def validate_allowed_scenarios(df: pd.DataFrame,
+                               allowed_scenarios: list) -> bool:
+    scenarios = set(df.scenario.unique())
+    unknown_scenarios = scenarios - set(allowed_scenarios)
+    valid = True
+    if len(unknown_scenarios) > 0:
+        log.warning(f'Scenario(s) not allowed: {", ".join(unknown_scenarios)}')
+        valid = False
     return valid
 
 
