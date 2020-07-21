@@ -1,0 +1,9 @@
+model: model
+native_regions:
+  Central Asia: Central Asia
+  Central America and Caribbean: Central America and Caribbean
+region_aggregation:
+  R5ASIA:
+    - Central Asia
+  R5LAM:
+    - Central America and Caribbean

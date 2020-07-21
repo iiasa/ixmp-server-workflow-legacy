@@ -101,8 +101,25 @@ def validate_region_mappings(df: pd.DataFrame,
         log.warning('No models to process!')
         valid = False
     for model in models:
-        if not find_region_mapping(region_mapping_path, model):
+        region_mapping = find_region_mapping(region_mapping_path, model)
+        if not region_mapping:
             log.error(f'Region mapping not found for model `{model}`')
+            valid = False
+            continue
+
+        native_regions = region_mapping['native_regions']
+        region_aggregation = region_mapping['region_aggregation']
+        valid_region_names = set(
+            list(native_regions.keys()) +
+            list(region_aggregation.keys()) +
+            ['World'])
+        print(f'valid_region_names ====> {valid_region_names}')
+        invalid_region_names = (set(df[df.model == model].region.unique())
+                                .difference(valid_region_names))
+        print(f'invalid_region_names ====> {invalid_region_names}')
+        if invalid_region_names:
+            log.warning(f'Model {model} contains unknown region names: '
+                        f'{", ".join(invalid_region_names)}')
             valid = False
     return valid
 
@@ -113,6 +130,10 @@ def read_config(config_path: str) -> Union[dict, list]:
 
 
 def find_region_mapping(mappings_path: str, model: str) -> Union[dict, None]:
+    if not os.path.isdir(mappings_path):
+        log.error('Directory containing region mappings does not exists')
+        return None
+
     for filename in os.listdir(mappings_path):
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             with open(os.path.join(mappings_path, filename), 'r') as stream:

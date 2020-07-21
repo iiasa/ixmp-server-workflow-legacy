@@ -2,6 +2,7 @@ import pandas as pd
 from ixmp_workflow_utils import *
 import yaml
 
+
 def test_read_config():
     obs = read_config('ixmp_workflow_utils/tests/sample_variable_config.yaml')
     assert isinstance(obs, dict)
@@ -46,3 +47,12 @@ def test_validate_required_variables(caplog):
     assert ('Following models miss required variables: invalid_model'
             in caplog.text)
     assert 'Following scenarios miss required variables' not in caplog.text
+
+
+def test_validate_region_mappings(caplog):
+    df = pd.read_csv('ixmp_workflow_utils/tests/sample_timeseries.csv')
+    region_mapping_path = 'ixmp_workflow_utils/tests/region_mapping'
+    assert not validate_region_mappings(df, region_mapping_path)
+    assert 'Region mapping not found for model `invalid_model`' in caplog.text
+    assert ('Model model contains unknown region names: Unknown country'
+            in caplog.text)
