@@ -33,11 +33,12 @@ def test_validate_variables_invalid_variable(caplog):
 
 def test_validate_allowed_scenarios(caplog):
     df = pd.read_csv('ixmp_workflow_utils/tests/sample_timeseries.csv')
-    with open('ixmp_workflow_utils/tests'
-              '/sample_allowed_scenarios.yaml', 'r') as f:
-        allowed_scenarios = yaml.load(f, yaml.FullLoader)
+    allowed_scenarios = (read_config('ixmp_workflow_utils/tests'
+                                     '/sample_allowed_scenarios.yaml')
+                         .get('allowed_scenarios', []))
     assert not validate_allowed_scenarios(df, allowed_scenarios)
     assert 'Scenario(s) not allowed' in caplog.text
+    assert '- valid_scenario' not in caplog.text
 
 
 def test_validate_required_variables(caplog):

@@ -93,10 +93,12 @@ def validate_allowed_scenarios(df: pd.DataFrame,
     :return True if validation pass, False otherwise
     """
     scenarios = set(df.scenario.unique())
+    print(f'aaaaa ====> {allowed_scenarios}')
     unknown_scenarios = scenarios - set(allowed_scenarios)
     valid = True
     if len(unknown_scenarios) > 0:
-        log.warning(f'Scenario(s) not allowed: {", ".join(unknown_scenarios)}')
+        log_validation_errors('Scenario(s) not allowed',
+                              list(unknown_scenarios))
         valid = False
     return valid
 
