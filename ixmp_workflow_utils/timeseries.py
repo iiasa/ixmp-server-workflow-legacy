@@ -1,5 +1,6 @@
 import logging
-
+from typing import Union
+import os
 import pandas as pd
 import yaml
 
@@ -12,6 +13,7 @@ def validate_variables_and_units(df: pd.DataFrame,
 
     :param df:              timeseries dataframe
     :param variable_config: variable configuration file
+    :return True if validation pass, False otherwise
     """
     log.debug('Start variables/units validation')
     valid = True
@@ -31,12 +33,51 @@ def validate_variables_and_units(df: pd.DataFrame,
             log.warning(f'Unknown unit(s) for variable {variable}: '
                         f'{", ".join(unknown_units)}')
             valid = False
+
     log.debug('Finish variables/units validation')
+    return valid
+
+
+def validate_required_variables(df: pd.DataFrame,
+                                variable_config: dict) -> bool:
+    """ Check timeseries data to contain know variables and units
+
+    :param df:              timeseries dataframe
+    :param variable_config: variable configuration file
+    :return True if validation pass, False otherwise
+    """
+    log.debug('Start required variables validation')
+    valid = True
+    scenarios = set(df.scenario.unique())
+    models = set(df.model.unique())
+
+    for variable in variable_config:
+        required = variable_config[variable].get('required', False)
+        if required:
+            variable_df = df[(df.variable == variable)]
+            invalid_models = models - set(variable_df.model.unique())
+            if len(invalid_models) > 0:
+                log.warning(f'Following models miss required variables: '
+                            f'{", ".join(invalid_models)}')
+                valid = False
+            invalid_scenarios = scenarios - set(variable_df.scenario.unique())
+            if len(invalid_scenarios) > 0:
+                log.warning(f'Following scenarios miss required variables: '
+                            f'{", ".join(invalid_scenarios)}')
+                valid = False
+
+    log.debug('Finish required variables validation')
     return valid
 
 
 def validate_allowed_scenarios(df: pd.DataFrame,
                                allowed_scenarios: list) -> bool:
+    """ Check whether dataframe contains only allowed scenarios
+
+    :param df:                  timeseries dataframe
+    :param allowed_scenarios:   list of allowed scenarios
+    :return True if validation pass, False otherwise
+    """
     scenarios = set(df.scenario.unique())
     unknown_scenarios = scenarios - set(allowed_scenarios)
     valid = True
@@ -46,6 +87,36 @@ def validate_allowed_scenarios(df: pd.DataFrame,
     return valid
 
 
-def read_config(config_path: str) -> dict:
+def validate_region_mappings(df: pd.DataFrame,
+                             region_mapping_path: str) -> bool:
+    """ Check whether for every model in dataframe exists region mapping
+
+    :param df: timeseries dataframe
+    :param region_mapping_path: path to region mappings
+    :return True if validation pass, False otherwise
+    """
+    models = list(df.model.unique())
+    valid = True
+    if len(models) == 0:
+        log.warning('No models to process!')
+        valid = False
+    for model in models:
+        if not find_region_mapping(region_mapping_path, model):
+            log.error(f'Region mapping not found for model `{model}`')
+            valid = False
+    return valid
+
+
+def read_config(config_path: str) -> Union[dict, list]:
     with open(config_path, 'r') as f:
         return yaml.load(f, Loader=yaml.FullLoader)
+
+
+def find_region_mapping(mappings_path: str, model: str) -> Union[dict, None]:
+    for filename in os.listdir(mappings_path):
+        if filename.endswith(".yaml") or filename.endswith(".yml"):
+            with open(os.path.join(mappings_path, filename), 'r') as stream:
+                region_mapping = yaml.load(stream, Loader=yaml.FullLoader)
+                if region_mapping.get('model') == model:
+                    return region_mapping
+    return None
