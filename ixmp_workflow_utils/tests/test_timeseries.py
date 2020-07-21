@@ -37,3 +37,12 @@ def test_validate_allowed_scenarios(caplog):
         allowed_scenarios = yaml.load(f, yaml.FullLoader)
     assert not validate_allowed_scenarios(df, allowed_scenarios)
     assert 'Scenario(s) not allowed' in caplog.text
+
+
+def test_validate_required_variables(caplog):
+    df = pd.read_csv('ixmp_workflow_utils/tests/sample_timeseries.csv')
+    cfg = read_config('ixmp_workflow_utils/tests/sample_variable_config.yaml')
+    assert not validate_required_variables(df, cfg)
+    assert ('Following models miss required variables: invalid_model'
+            in caplog.text)
+    assert 'Following scenarios miss required variables' not in caplog.text
