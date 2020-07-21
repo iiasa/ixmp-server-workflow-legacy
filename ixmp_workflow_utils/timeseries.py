@@ -5,6 +5,16 @@ import pandas as pd
 import yaml
 
 log = logging.getLogger(__name__)
+NL = '\n'
+
+
+def log_validation_errors(message: str, errors: list,
+                          level=logging.WARNING, limit=100) -> None:
+    log.log(level, f'{message}:')
+    for error in errors[:limit]:
+        log.log(level, f'- {error}')
+    if len(errors) > limit:
+        log.log(level, f'and {len(errors) - limit} more...')
 
 
 def validate_variables_and_units(df: pd.DataFrame,
@@ -21,18 +31,22 @@ def validate_variables_and_units(df: pd.DataFrame,
     # check for unknown variable names
     unknown_variables = set(df.variable.unique()) - set(variable_config.keys())
     if len(unknown_variables) > 0:
-        log.warning(f'Unknown variable(s): {", ".join(unknown_variables)}')
+        log_validation_errors('Unknown variable(s)', list(unknown_variables))
         valid = False
 
     # check variables for units
+    unknown_variable_units = []
     for variable in variable_config:
         unit = variable_config[variable]['unit']
         variable_df = df[(df.variable == variable) & (df.unit != unit)]
         unknown_units = list(variable_df.unit.unique())
         if len(unknown_units) > 0:
-            log.warning(f'Unknown unit(s) for variable {variable}: '
-                        f'{", ".join(unknown_units)}')
+            unknown_variable_units.append(f'{variable}: '
+                                          f'{", ".join(unknown_units)}')
             valid = False
+    if len(unknown_variable_units) > 0:
+        log_validation_errors('Unknown unit(s) for variable(s):',
+                              list(unknown_variable_units))
 
     log.debug('Finish variables/units validation')
     return valid
@@ -57,13 +71,13 @@ def validate_required_variables(df: pd.DataFrame,
             variable_df = df[(df.variable == variable)]
             invalid_models = models - set(variable_df.model.unique())
             if len(invalid_models) > 0:
-                log.warning(f'Following models miss required variables: '
-                            f'{", ".join(invalid_models)}')
+                log.warning(f'Following models miss required variable '
+                            f'{variable}: {", ".join(invalid_models)}')
                 valid = False
             invalid_scenarios = scenarios - set(variable_df.scenario.unique())
             if len(invalid_scenarios) > 0:
-                log.warning(f'Following scenarios miss required variables: '
-                            f'{", ".join(invalid_scenarios)}')
+                log.warning(f'Following scenarios miss required variable '
+                            f'{variable}: {", ".join(invalid_scenarios)}')
                 valid = False
 
     log.debug('Finish required variables validation')
