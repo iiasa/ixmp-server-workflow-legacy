@@ -1,6 +1,6 @@
 import pandas as pd
-from ixmp_workflow_utils import *
 import yaml
+from ixmp_workflow_utils import *
 
 
 def test_read_config():
@@ -44,9 +44,9 @@ def test_validate_required_variables(caplog):
     df = pd.read_csv('ixmp_workflow_utils/tests/sample_timeseries.csv')
     cfg = read_config('ixmp_workflow_utils/tests/sample_variable_config.yaml')
     assert not validate_required_variables(df, cfg)
-    assert ('Following models miss required variables: invalid_model'
-            in caplog.text)
-    assert 'Following scenarios miss required variables' not in caplog.text
+    assert ('Following models miss required variable Emissions|CO2: '
+            'invalid_model' in caplog.text)
+    assert 'Following scenarios miss required variable' not in caplog.text
 
 
 def test_validate_region_mappings(caplog):
