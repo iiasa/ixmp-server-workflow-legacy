@@ -93,7 +93,6 @@ def validate_allowed_scenarios(df: pd.DataFrame,
     :return True if validation pass, False otherwise
     """
     scenarios = set(df.scenario.unique())
-    print(f'aaaaa ====> {allowed_scenarios}')
     unknown_scenarios = scenarios - set(allowed_scenarios)
     valid = True
     if len(unknown_scenarios) > 0:
@@ -129,10 +128,8 @@ def validate_region_mappings(df: pd.DataFrame,
             list(native_regions.keys()) +
             list(region_aggregation.keys()) +
             ['World'])
-        print(f'valid_region_names ====> {valid_region_names}')
         invalid_region_names = (set(df[df.model == model].region.unique())
                                 .difference(valid_region_names))
-        print(f'invalid_region_names ====> {invalid_region_names}')
         if invalid_region_names:
             log.warning(f'Model {model} contains unknown region names: '
                         f'{", ".join(invalid_region_names)}')
