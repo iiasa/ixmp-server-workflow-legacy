@@ -4,6 +4,8 @@
 # setuptools
 build/
 dist
+/.eggs
+/*.egg-info
 
 # virtualenv
 venv/
