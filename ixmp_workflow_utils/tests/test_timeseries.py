@@ -1,5 +1,4 @@
 import pandas as pd
-import yaml
 from ixmp_workflow_utils import *
 
 
