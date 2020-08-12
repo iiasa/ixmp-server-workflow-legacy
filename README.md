@@ -5,4 +5,4 @@ Utility functions for executing scenario processing workflow on the ixmp server 
 First, install the package:
 `pip install -e .`
 Now you can run the tests using pytest:
-`py.test ixmp_workflow_utils/tests/`
+`py.test ixmp_server_workflow/tests/`
