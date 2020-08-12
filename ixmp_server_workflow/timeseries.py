@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import yaml
 
+from .errors import IxmpServerWorkflowError
+
 log = logging.getLogger(__name__)
 NL = '\n'
 
@@ -19,7 +21,7 @@ def log_validation_errors(message: str, errors: list,
 
 def validate_variables_and_units(df: pd.DataFrame,
                                  variable_config: dict) -> bool:
-    """ Check timeseries data to contain know variables and units
+    """ Check that timeseries data contains only know variables and units.
 
     :param df:              timeseries dataframe
     :param variable_config: variable configuration file
@@ -54,7 +56,7 @@ def validate_variables_and_units(df: pd.DataFrame,
 
 def validate_required_variables(df: pd.DataFrame,
                                 variable_config: dict) -> bool:
-    """ Check timeseries data to contain know variables and units
+    """ Check that timeseries data contains all required variables.
 
     :param df:              timeseries dataframe
     :param variable_config: variable configuration file
@@ -86,7 +88,7 @@ def validate_required_variables(df: pd.DataFrame,
 
 def validate_allowed_scenarios(df: pd.DataFrame,
                                allowed_scenarios: list) -> bool:
-    """ Check whether dataframe contains only allowed scenarios
+    """ Check that dataframe contains only allowed scenarios.
 
     :param df:                  timeseries dataframe
     :param allowed_scenarios:   list of allowed scenarios
@@ -104,7 +106,7 @@ def validate_allowed_scenarios(df: pd.DataFrame,
 
 def validate_region_mappings(df: pd.DataFrame,
                              region_mapping_path: str) -> bool:
-    """ Check whether for every model in dataframe exists region mapping
+    """ Check whether for every model in dataframe exists region mapping.
 
     :param df: timeseries dataframe
     :param region_mapping_path: path to region mappings
@@ -116,9 +118,10 @@ def validate_region_mappings(df: pd.DataFrame,
         log.warning('No models to process!')
         valid = False
     for model in models:
-        region_mapping = find_region_mapping(region_mapping_path, model)
-        if not region_mapping:
-            log.error(f'Region mapping not found for model `{model}`')
+        try:
+            region_mapping = get_region_mapping(region_mapping_path, model)
+        except IxmpServerWorkflowError as err:
+            log.error(err)
             valid = False
             continue
 
@@ -138,14 +141,23 @@ def validate_region_mappings(df: pd.DataFrame,
 
 
 def read_config(config_path: str) -> Union[dict, list]:
+    """Parse a yaml config file"""
     with open(config_path, 'r') as f:
         return yaml.load(f, Loader=yaml.FullLoader)
 
 
-def find_region_mapping(mappings_path: str, model: str) -> Union[dict, None]:
+def get_region_mapping(mappings_path: str, model: str) -> Union[dict, None]:
+    """Search the region mapping yaml file of a model in a given path.
+
+    :param mappings_path: path to search for the region mapping file
+    :param model: model name
+    :return parsed region mapping when found, or raises IxmpServerWorkflowError
+    """
     if not os.path.isdir(mappings_path):
-        log.error('Directory containing region mappings does not exists')
-        return None
+        msg = 'Directory containing region mappings does not exists: %s' % \
+                mappings_path
+        log.error(msg)
+        raise IxmpServerWorkflowError(msg)
 
     for filename in os.listdir(mappings_path):
         if filename.endswith(".yaml") or filename.endswith(".yml"):
@@ -153,4 +165,7 @@ def find_region_mapping(mappings_path: str, model: str) -> Union[dict, None]:
                 region_mapping = yaml.load(stream, Loader=yaml.FullLoader)
                 if region_mapping.get('model') == model:
                     return region_mapping
-    return None
+
+    msg = 'No region mapping found for model "%s" in path "%s"' % \
+          (model, mappings_path)
+    raise IxmpServerWorkflowError(msg)

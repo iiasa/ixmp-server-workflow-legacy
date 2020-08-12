@@ -1,0 +1,2 @@
+class IxmpServerWorkflowError(Exception):
+    pass

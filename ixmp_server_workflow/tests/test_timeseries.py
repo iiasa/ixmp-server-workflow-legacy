@@ -53,6 +53,7 @@ def test_validate_region_mappings(caplog):
     df = pd.read_csv('ixmp_server_workflow/tests/sample_timeseries.csv')
     region_mapping_path = 'ixmp_server_workflow/tests/region_mapping'
     assert not validate_region_mappings(df, region_mapping_path)
-    assert 'Region mapping not found for model `invalid_model`' in caplog.text
+    expected_error = 'No region mapping found for model "invalid_model" in '
+    assert expected_error in caplog.text
     assert ('Model model contains unknown region names: Unknown country'
             in caplog.text)
