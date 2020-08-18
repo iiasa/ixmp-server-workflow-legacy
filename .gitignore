@@ -10,6 +10,9 @@ dist
 # virtualenv
 venv/
 
+# vim
+*.swp
+
 # JetBrains IDEs
 *.iml
 .idea/
@@ -20,3 +23,6 @@ venv/
 
 # temporary folder
 temp/
+
+# python caches
+__pycache__
