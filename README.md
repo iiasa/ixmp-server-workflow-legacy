@@ -1,8 +1,8 @@
-# ixmp-server-workflow
-Utility functions for executing scenario processing workflow on the ixmp server infrastructure
+# IXMP server workflow package
 
-# Run tests
-First, install the package:
-`pip install -e .`
-Now you can run the tests using pytest:
-`py.test ixmp_server_workflow/tests/`
+Utility functions for executing scenario processing workflow on the IXMP server infrastructure.
+
+## Run tests
+
+First, install the package using `pip install -e .[tests]`.
+Then run the tests using pytest `pytest`.
